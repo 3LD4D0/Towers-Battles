@@ -1,0 +1,409 @@
+-- 🔐 SISTEMA DE KEY PARA PROTEGER TU SCRIPT
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local pGui = player:WaitForChild("PlayerGui")
+
+-- LLAVES PERMITIDAS
+local ACCEPTED_KEYS = {
+    ["suicidehub"] = true,
+    ["d4d0team"] = true
+}
+
+local keyAccepted = false
+
+-- CREAR GUI DE KEY
+local function createKeyGui()
+    local gui = Instance.new("ScreenGui", pGui)
+    gui.Name = "KeySystemGui"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = true
+
+    local clickSound = Instance.new("Sound", gui)
+    clickSound.SoundId = "rbxassetid://6895079853"
+    clickSound.Volume = 3
+
+    local bg = Instance.new("Frame", gui)
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundColor3 = Color3.new(0,0,0)
+    bg.BackgroundTransparency = 1
+
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.new(0,350,0,240)
+    frame.Position = UDim2.new(0.5,-175,0.5,-120)
+    frame.BackgroundColor3 = Color3.fromRGB(0,60,90)
+    frame.BackgroundTransparency = 1
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1,0,0,40)
+    title.Font = Enum.Font.GothamBlack
+    title.TextSize = 26
+    title.Text = "🔑 Key System"
+    title.TextColor3 = Color3.fromRGB(255,255,255)
+    title.BackgroundTransparency = 1
+
+    local box = Instance.new("TextBox", frame)
+    box.Size = UDim2.new(0.9,0,0,40)
+    box.Position = UDim2.new(0.05,0,0,70)
+    box.PlaceholderText = "Paste your key here"
+    box.Text = ""
+    box.ClearTextOnFocus = false
+    box.Font = Enum.Font.Gotham
+    box.TextSize = 20
+    box.TextColor3 = Color3.fromRGB(255,255,255)
+    box.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0,8)
+
+    local statusLbl = Instance.new("TextLabel", frame)
+    statusLbl.Size = UDim2.new(1,0,0,30)
+    statusLbl.Position = UDim2.new(0,0,0,115)
+    statusLbl.Font = Enum.Font.GothamBold
+    statusLbl.TextSize = 20
+    statusLbl.Text = ""
+    statusLbl.TextColor3 = Color3.fromRGB(255,0,0)
+    statusLbl.BackgroundTransparency = 1
+
+    local verifyBtn = Instance.new("TextButton", frame)
+    verifyBtn.Size = UDim2.new(0.4, 0, 0, 35)
+    verifyBtn.Position = UDim2.new(0.05,0,1,-45)
+    verifyBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    verifyBtn.Text = "Verify"
+    verifyBtn.Font = Enum.Font.GothamBold
+    verifyBtn.TextSize = 18
+    verifyBtn.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", verifyBtn).CornerRadius = UDim.new(0,8)
+
+    local destroyBtn = verifyBtn:Clone()
+    destroyBtn.Text = "Destroy"
+    destroyBtn.Position = UDim2.new(0.55,0,1,-45)
+    destroyBtn.Parent = frame
+
+    TweenService:Create(bg, TweenInfo.new(0.4), {BackgroundTransparency = 0.35}):Play()
+    TweenService:Create(frame, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
+
+    local function showShushEmoji(callback)
+        local eGui = Instance.new("ScreenGui", pGui)
+        eGui.IgnoreGuiInset = true
+
+        local overlay = Instance.new("Frame", eGui)
+        overlay.Size = UDim2.new(1,0,1,0)
+        overlay.BackgroundColor3 = Color3.new(0,0,0)
+        overlay.BackgroundTransparency = 1
+
+        local emoji = Instance.new("TextLabel", eGui)
+        emoji.AnchorPoint = Vector2.new(0.5,0.5)
+        emoji.Position = UDim2.new(0.5,0,0.5,0)
+        emoji.Size = UDim2.new(0,0,0,0)
+        emoji.Font = Enum.Font.SourceSansBold
+        emoji.Text = "🤫"
+        emoji.TextScaled = true
+        emoji.TextTransparency = 1
+        emoji.BackgroundTransparency = 1
+
+        local s = Instance.new("Sound", eGui)
+        s.SoundId = "rbxassetid://1460170854"
+        s.Volume = 3
+        s:Play()
+
+        TweenService:Create(overlay,TweenInfo.new(0.4),{BackgroundTransparency=0.35}):Play()
+        TweenService:Create(emoji,TweenInfo.new(0.4),{TextTransparency=0,Size=UDim2.new(0,200,0,200)}):Play()
+
+        s.Ended:Wait()
+        TweenService:Create(overlay,TweenInfo.new(0.4),{BackgroundTransparency=1}):Play()
+        TweenService:Create(emoji,TweenInfo.new(0.4),{TextTransparency=1}):Play()
+        wait(0.4)
+        eGui:Destroy()
+
+        if callback then callback() end
+    end
+
+    local function verify()
+        clickSound:Play()
+        local key = box.Text:lower():gsub("^%s+",""):gsub("%s+$","")
+        if ACCEPTED_KEYS[key] then
+            statusLbl.Text = "Correct Key! ✓"
+            statusLbl.TextColor3 = Color3.fromRGB(0,255,0)
+            wait(0.5)
+            keyAccepted = true
+            gui:Destroy()
+            showShushEmoji(nil)
+        else
+            statusLbl.Text = "Incorrect Key :("
+            statusLbl.TextColor3 = Color3.fromRGB(255,0,0)
+        end
+    end
+
+    verifyBtn.MouseButton1Click:Connect(verify)
+    destroyBtn.MouseButton1Click:Connect(function()
+        clickSound:Play()
+        gui:Destroy()
+    end)
+    box.FocusLost:Connect(function(enterPressed)
+        if enterPressed then verify() end
+    end)
+end
+
+-- Mostrar GUI y esperar a que se acepte la key
+createKeyGui()
+repeat wait() until keyAccepted
+
+-- ✅ PEGA TU SCRIPT COMPLETO AQUÍ:
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local lp = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "ModernTowerHub"
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Botón flotante elegante
+local openBtn = Instance.new("ImageButton", gui)
+openBtn.Size = UDim2.new(0, 50, 0, 50)
+openBtn.Position = UDim2.new(0, 12, 0, 12)
+openBtn.BackgroundTransparency = 1
+openBtn.Image = "rbxassetid://75291154671368"
+openBtn.ImageTransparency = 0.1
+openBtn.Name = "OpenBtn"
+
+-- GUI principal
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 540, 0, 500)
+main.Position = UDim2.new(0, 75, 0.5, -250)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+main.BackgroundTransparency = 0.3
+main.Visible = false
+main.Active = true
+main.Draggable = true
+
+local bg = Instance.new("ImageLabel", main)
+bg.Size = UDim2.new(1, 0, 1, 0)
+bg.Image = "rbxassetid://75291154671368"
+bg.ImageTransparency = 0.7
+bg.BackgroundTransparency = 1
+bg.ZIndex = 0
+
+-- Tabs (izquierda)
+local tabs = Instance.new("Frame", main)
+tabs.Size = UDim2.new(0, 120, 1, 0)
+tabs.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+tabs.BackgroundTransparency = 0.3
+tabs.BorderSizePixel = 0
+
+local content = Instance.new("Frame", main)
+content.Size = UDim2.new(0, 420, 1, 0)
+content.Position = UDim2.new(0, 120, 0, 0)
+content.BackgroundTransparency = 1
+
+-- Función para crear tabs visuales
+local function makeTab(name, index)
+	local btn = Instance.new("TextButton", tabs)
+	btn.Size = UDim2.new(1, -10, 0, 45)
+	btn.Position = UDim2.new(0, 5, 0, 10 + (index * 55))
+	btn.Text = name
+	btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 16
+	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	btn.BorderSizePixel = 0
+	local corner = Instance.new("UICorner", btn)
+	return btn
+end
+
+-- Contenido
+local towersFrame = Instance.new("Frame", content)
+towersFrame.Size = UDim2.new(1, 0, 1, 0)
+towersFrame.BackgroundTransparency = 1
+towersFrame.Visible = true
+
+local combatFrame = towersFrame:Clone()
+combatFrame.Parent = content
+combatFrame.Visible = false
+
+local tab1 = makeTab("🗼 Towers", 0)
+local tab2 = makeTab("😈 Combat", 1)
+
+local function highlightTab(activeBtn)
+	for _, child in ipairs(tabs:GetChildren()) do
+		if child:IsA("TextButton") then
+			child.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+		end
+	end
+	activeBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+end
+
+tab1.MouseButton1Click:Connect(function()
+	towersFrame.Visible = true
+	combatFrame.Visible = false
+	highlightTab(tab1)
+end)
+tab2.MouseButton1Click:Connect(function()
+	towersFrame.Visible = false
+	combatFrame.Visible = true
+	highlightTab(tab2)
+end)
+
+highlightTab(tab1) -- Por defecto, activar tab1
+
+-- Botones comunes
+local function makeBtn(name, parent, y, color)
+	local btn = Instance.new("TextButton", parent)
+	btn.Size = UDim2.new(0, 360, 0, 45)
+	btn.Position = UDim2.new(0, 30, 0, y)
+	btn.BackgroundColor3 = color
+	btn.Text = name
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 17
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.BorderSizePixel = 0
+	local corner = Instance.new("UICorner", btn)
+	return btn
+end
+
+-- Botón ON/OFF elegante
+local function makeToggleBtn(name, parent, y)
+	local btn = makeBtn(name.." (OFF)", parent, y, Color3.fromRGB(180, 50, 50))
+	local state = false
+	local toggleEvent = Instance.new("BindableEvent")
+	btn.MouseButton1Click:Connect(function()
+		state = not state
+		btn.Text = name.." ("..(state and "ON" or "OFF")..")"
+		btn.BackgroundColor3 = state and Color3.fromRGB(50, 200, 70) or Color3.fromRGB(180, 50, 50)
+		toggleEvent:Fire(state)
+	end)
+	return btn, toggleEvent
+end
+
+-- Botones Towers
+makeBtn("Red", towersFrame, 20, Color3.fromRGB(255, 50, 50)).MouseButton1Click:Connect(function() end)
+makeBtn("Blue", towersFrame, 80, Color3.fromRGB(50, 150, 255)).MouseButton1Click:Connect(function()
+	lp.Character.HumanoidRootPart.CFrame = CFrame.new(0.51704, 24.8, 131.35843)
+end)
+makeBtn("Yellow", towersFrame, 140, Color3.fromRGB(255, 255, 100)).MouseButton1Click:Connect(function()
+	lp.Character.HumanoidRootPart.CFrame = CFrame.new(130.02489, 24.79998, -0.10935)
+end)
+makeBtn("Green", towersFrame, 200, Color3.fromRGB(50, 255, 100)).MouseButton1Click:Connect(function()
+	lp.Character.HumanoidRootPart.CFrame = CFrame.new(-1.21166, 24.79998, -131.09381)
+end)
+
+-- Combat
+local killAllBtn, killAllToggle = makeToggleBtn("Kill All", combatFrame, 20)
+local playersBtn = makeBtn("Players List", combatFrame, 80, Color3.fromRGB(120,120,120))
+local viewBtn, viewToggle = makeToggleBtn("View Player", combatFrame, 140)
+local killPlayerBtn, killPlayerToggle = makeToggleBtn("Kill Player", combatFrame, 200)
+local notifyBtn, notifyToggle = makeToggleBtn("Notify Dead Player", combatFrame, 260)
+
+-- Kill All logic
+local killAllConn
+killAllToggle.Event:Connect(function(on)
+	if killAllConn then killAllConn:Disconnect() end
+	if on then
+		killAllConn = RunService.RenderStepped:Connect(function()
+			for _, p in pairs(Players:GetPlayers()) do
+				if p ~= lp and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+					p.Character.HumanoidRootPart.CFrame = lp.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)
+				end
+			end
+		end)
+	end
+end)
+
+-- Lista de jugadores
+local selector = Instance.new("Frame", gui)
+selector.Size = UDim2.new(0, 220, 0, 300)
+selector.Position = UDim2.new(0, 600, 0.5, -150)
+selector.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+selector.BorderSizePixel = 0
+selector.Visible = false
+local list = Instance.new("ScrollingFrame", selector)
+list.Size = UDim2.new(1, 0, 1, 0)
+list.CanvasSize = UDim2.new(0, 0, 0, 0)
+list.ScrollBarThickness = 6
+list.BackgroundTransparency = 1
+
+local selectedPlayer = nil
+local function refreshList()
+	list:ClearAllChildren()
+	local y = 0
+	for _, p in pairs(Players:GetPlayers()) do
+		local b = Instance.new("TextButton", list)
+		b.Size = UDim2.new(1, -10, 0, 30)
+		b.Position = UDim2.new(0, 5, 0, y)
+		b.Text = p.Name
+		b.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+		b.TextColor3 = Color3.new(1,1,1)
+		b.Font = Enum.Font.GothamBold
+		b.TextSize = 14
+		local c = Instance.new("UICorner", b)
+		b.MouseButton1Click:Connect(function()
+			selectedPlayer = p
+			selector.Visible = false
+		end)
+		y += 35
+	end
+	list.CanvasSize = UDim2.new(0, 0, 0, y)
+end
+Players.PlayerAdded:Connect(refreshList)
+Players.PlayerRemoving:Connect(refreshList)
+
+playersBtn.MouseButton1Click:Connect(function()
+	selector.Visible = not selector.Visible
+	refreshList()
+end)
+
+-- View Player
+local viewConn
+viewToggle.Event:Connect(function(on)
+	if viewConn then viewConn:Disconnect() end
+	if on and selectedPlayer then
+		viewConn = RunService.RenderStepped:Connect(function()
+			if selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
+				workspace.CurrentCamera.CameraSubject = selectedPlayer.Character.Humanoid
+			end
+		end)
+	else
+		if lp.Character and lp.Character:FindFirstChild("Humanoid") then
+			workspace.CurrentCamera.CameraSubject = lp.Character.Humanoid
+		end
+	end
+end)
+
+-- Kill Player
+local killConn
+killPlayerToggle.Event:Connect(function(on)
+	if killConn then killConn:Disconnect() end
+	if on and selectedPlayer then
+		killConn = RunService.RenderStepped:Connect(function()
+			if selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+				selectedPlayer.Character.HumanoidRootPart.CFrame = lp.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
+			end
+		end)
+	end
+end)
+
+-- Notify
+local deadConn
+notifyToggle.Event:Connect(function(on)
+	if deadConn then deadConn:Disconnect() end
+	if on and selectedPlayer and selectedPlayer.Character then
+		local hum = selectedPlayer.Character:FindFirstChild("Humanoid")
+		if hum then
+			deadConn = hum.Died:Connect(function()
+				StarterGui:SetCore("SendNotification", {
+					Title = "Dead Player",
+					Text = selectedPlayer.Name .. " ha muerto.",
+					Duration = 3
+				})
+			end)
+		end
+	end
+end)
+
+-- Mostrar/ocultar menú
+openBtn.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
+end)
